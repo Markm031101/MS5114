@@ -1,0 +1,135 @@
+!pip install yfinance
+!pip install tensorflow
+!pip install transformers
+import yfinance as yf
+from transformers import pipeline
+
+def calc_returns(prices):
+    #EMpty list to store returns
+    returns = []
+    
+   
+    for i in range(1, len(prices)):
+        #calculations for thte periodic returns 
+        periodic_return = (prices[i] / prices[i-1]) - 1
+        #Place the calcultaed return to the 'return' list
+        returns.append(periodic_return)
+    
+    #Returns the list of calculated returns
+    return returns
+
+#Import the yfinance library
+import yfinance as yf
+
+#function to calculate the periodic returns
+def calc_returns(prices):
+    #Empty list of returns
+    returns = []
+    #calcualtions
+    for i in range(1, len(prices)):
+        r = (prices[i] / prices[i - 1]) - 1
+        returns.append(r)
+    return returns
+#set the ticker for Accenture
+ticker = "ACN"
+
+#Set the tiemframe of analysis
+start_date = "2024-01-24"
+end_date = "2024-02-07"
+
+#finding the stock data for the Accenture ticker and for the timeframe 
+data = yf.download(ticker, start=start_date, end=end_date)
+
+#Extracting the closing prices 
+closing_prices = data['Close'].tolist()
+
+returns = calc_returns(closing_prices)
+
+#print the closing prices and calcualted returns with rounding 
+print("Closing Prices:", closing_prices)
+print("Returns:", [round(r, 4) for r in returns])
+
+#Function to calcualte the SMA
+def calc_simple_moving_average(prices, window_size):
+    #Empty list
+    averages = []
+    
+    #calcualtions 
+    for i in range(len(prices) - window_size + 1):
+        window_average = sum(prices[i:i+window_size]) / window_size
+        
+        #rounding the calcualted value to two decimal palces
+        averages.append(round(window_average, 2))
+        
+    #printing the list of SMA
+    print(averages)
+
+
+#Import the yfiance library
+import yfinance as yf
+
+
+#Calcualtions
+def calc_simple_moving_average(prices, window_size):
+    #Empty List
+    averages = []
+    
+    #Loop for the prices
+    for i in range(len(prices) - window_size + 1):
+        # Calcualtions of averages
+        window_average = sum(prices[i:i+window_size]) / window_size
+        averages.append(round(window_average, 2))
+    # return the list 
+    return averages
+
+#Set the ticker symbol
+ticker = "ACN."
+#Timeframe for analysis
+start_date = "2023-10-01"
+end_date = "2023-12-31"
+
+#Downloading the stock data for yfinance
+data = yf.download(ticker, start=start_date, end=end_date)
+
+#Extracting the closing price 
+closing_prices = data['Close'].tolist()
+
+#Window size
+window_size = 14
+#Calculations
+averages = calc_simple_moving_average(closing_prices, window_size)
+
+#Printing list of closing prices and moving averages
+print("Closing Prices:", closing_prices)
+print("Simple Moving Averages:", averages)
+
+
+#Importing the yfinance library
+import yfinance as yf
+#Importing the pipeine function from the transformers library
+from transformers  import pipeline 
+
+#Ticker Symbol for Accenture
+ticker_symbol="ACN"
+
+#Ticker object to access data
+stock=yf.Ticker(ticker_symbol)
+
+#Retrieve the latest data 
+news=stock.news
+
+#Extract the titles from each news article
+news_titles=[article['title'] for article in news]
+
+#Sentiment pipeline analysis
+sentiment_pipeline=pipeline("sentiment-analysis")
+
+#Sentiment analysis for each news article
+for title in news_titles:
+    sentiment=sentiment_pipeline(title)
+    #Print hte title and its sentiment analysis
+    print(f"Title: {title}\nSentiment: {sentiment}\n")
+
+# After running the sentiment analysis for each news title, the code has printed the sentiment for each news title and is either positive or negative,
+a positive sentiment result indicates good news for Accenture, whereas a negative sentiment indicates a abd news story.
+This sentiment analysis indicates 5 positive results, indicating that the stock has a good sentiment and the stock is in favoutr of having an increased stock price.
