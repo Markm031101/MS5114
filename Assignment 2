@@ -1,0 +1,170 @@
+MS5114 Individual Assignment 2
+Student ID: 20333896
+
+Name: Mark Moran
+
+Introduction:
+In this assignment I will be analysing the spotify dataset by applying various techniques to analyse and extract insights from the spotify CSV. This Spotify dataset is comprised of numerous songs acros dififerent genres, with each having its own audio features. My objective for this assignment is to utilise these features to perfrom a machine learning task that addresses a specific busineess problem, such as prediicting the populartiy of a song by its audio features.
+
+1.1 Business Question:
+
+How can I predict the popularity of songs to inform the marekting, production and artist decisions when making music.
+
+Data Colllection:
+The first step involves setting up our jupyter notebook environemnt with essentail libraries like Pandas for manipualting data, Seaborn and Matplotlib for creating visual representations of the data, and Numpy for dealing with numeric values. I then load in the Spotify Songs Dataset from a CSV file, giving us a view of the data i will be working with. By displaying the first few rows, I gain an understanding of thhe structure of the dataset, which is useful for processing the data.
+
+import numpy as np 
+import pandas as pd 
+import seaborn as sns
+import matplotlib.pyplot as plt
+# Load the Spotify dataset
+spotify_dataset = r"C:\Users\markm\OneDrive\Documents\Python MS5114\spotify-dataset.csv"
+spotify_data = pd.read_csv(spotify_dataset)
+# Display the first few entries of the dataset
+spotify_data.head()
+
+Data Pre-Processing:
+During the data pre-processing stage i cleaned the data and prepared the dataset for further analysis. This included handling missing values to maintain the integrity of the dataset,, encoding features to make them machine-readable, and applying feature scaling to normalise the data ranges. These steps are essential for ensuring that our machine learning modles perfrom effectively and provide reliable insights.
+
+# Get a statistical summary of the dataset
+spotify_data.describe()
+# Print the column names of the dataset
+print(spotify_data.keys())
+
+# Removal of unnecessary columns from the dataset
+spotify_data.drop(['Unnamed: 0'],axis=1, inplace=True)
+# Removal of unnecessary columns from the dataset
+spotify_data.drop(['Unnamed: 0'],axis=1, inplace=True)
+# Removal of unnecessary columns from the dataset
+spotify_data.drop(['track_id'],axis=1, inplace=True)
+# Removal of unnecessary columns from the dataset
+spotify_data.drop(['artists'],axis=1, inplace=True)
+# Removal of unnecessary columns from the dataset
+spotify_data.drop(['album_name'],axis=1, inplace=True)
+# Removal of unnecessary columns from the dataset
+spotify_data.drop(['track_name'],axis=1, inplace=True)
+# Removal of unnecessary columns from the dataset
+spotify_data.drop(['track_genre'],axis=1, inplace=True)
+print(spotify_data.keys())
+
+# Check for missing values in the dataset
+pd.isnull(spotify_data).sum()
+
+# Drop rows with missing values
+spotify_data.dropna(inplace=True)
+
+# Confirm there are no more missing values
+spotify_data.isnull().sum()
+
+# Display information about the dataset
+spotify_data.info()
+
+Exploratory Data Analysis (EDA):
+EDA allowed me to uncover patterns, detect outliers, and understand the datasets properties through descriptive statistics and visualisations. By examining the distribution of key features and theirrelationships, i gained valuable insight that guided my machine learning strategy. This phase is exploratory in nature, and encouraged me to seek answers to questions that may be invaluable in gaining insights through data visulaisation and manipulation.
+
+# Create a heatmap showing correlations between features
+plt.figure(figsize=(12, 8))
+sns.heatmap(spotify_data.corr(), annot=True)
+
+# Compute the correlation matrix for the numerical columns in the spotify_data DataFrame
+spotify_data.corr()
+
+# Create a regression plot showing the relationship between loudness and energy
+plt.figure(figsize=(8,4))
+sns.regplot(data=spotify_data, y='loudness', x='energy').set(title='Regression Plot for Loudness and Energy Correlation')
+
+Machine Learning Task:
+In this crucial step I defined the business problem that our machine learning task will address. This involves specifying the objective of my model, identifying input feattures and the target varibale,and deciding on the type of machine learning model to use. I had the choice ofclassification, regression, or clustering. this definition sets a clear goal for my model and ensures the outcomes are aligned witht he business context.
+
+# Finding the median of the popular column
+average=spotify_data['popularity'].median()
+print("Average:", average)
+# Bin the popularity into categories
+spotify_data.loc[spotify_data['popularity'] < 35, 'popularity'] = 0 
+spotify_data.loc[spotify_data['popularity'] >= 35, 'popularity'] = 1
+​
+# Filter dataset for popular tracks
+spotify_data.loc[spotify_data['popularity'] == 1]
+Data Preparation for Modelling:
+Preparing the data for modelling involves splitting the datatset into training and testing sets, a crucial step for evaluating model performance. This separation allows me to train our models on one subset of the dataset and test its predictive capabilities on another, unseen subset, therefore simulating how a model would perfrom in a real world scenario.
+
+# Import machine learning models 
+from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.tree import DecisionTreeClassifier
+# Import machine learning metrics
+from sklearn.metrics import make_scorer, accuracy_score 
+from sklearn.model_selection import train_test_split
+# Define the feature set for the models
+features = ["acousticness", "danceability", "duration_ms", "energy", "instrumentalness", "key", "liveness", 
+            "mode", "speechiness", "tempo", "time_signature", "valence"]
+# Split the dataset into training and test sets
+training = spotify_data.sample(frac = 0.8,random_state = 420)
+X_train = training[features]
+y_train = training['popularity']
+X_test = spotify_data.drop(training.index)[features]
+# Further split the training set for validation
+X_train, X_valid, y_train, y_valid = train_test_split(X_train, y_train, test_size = 0.2, random_state = 420)
+Model Development:
+I developed and evaluated two different machine learning models to address my defiend task. For each model, i went through the steps of building the model, selecting and tuning the hyperparameters, training the model on the training set, and evaluating its perfromance using appropriate metrics. Visualisation of the results aid in interpreting the models performance and understanding its strengths and limitations.
+
+# Train and evaluate a Random Forest Model
+RFC_Model = RandomForestClassifier()
+RFC_Model.fit(X_train, y_train)
+RFC_Predict = RFC_Model.predict(X_valid)
+RFC_Accuracy = accuracy_score(y_valid, RFC_Predict)
+print("Accuracy: " + str(RFC_Accuracy))
+# Train and evaluate a K-Nearest Neighbors Model
+KNN_Model = KNeighborsClassifier()
+KNN_Model.fit(X_train, y_train)
+KNN_Predict = KNN_Model.predict(X_valid)
+KNN_Accuracy = accuracy_score(y_valid, KNN_Predict)
+print("Accuracy: " + str(KNN_Accuracy))
+# Train and evaluate a Decision Tree Model
+DT_Model = DecisionTreeClassifier()
+DT_Model.fit(X_train, y_train)
+DT_Predict = DT_Model.predict(X_valid)
+DT_Accuracy = accuracy_score(y_valid, DT_Predict)
+print("Accuracy: " + str(DT_Accuracy))
+Insights and Recommendations:
+Based on the analysis and modeling, this section shows us the key findings and translates them into actionable bbusiness insights. I weigh up the pros and cons of how the deveoped momdel can be applied in a business context to solve the identified problem of predicting the popularity of a song based on its audio features and suggest recommendations for further development. This might include suggestions for impoving the models accuracy, addressing data limitations, or exploring additional modeling techniques.
+
+# Summarize the accuracy of the models
+model_accuracy = pd.DataFrame({'Model': ['RandomForestClassifier','KNNClassifier','DecisionTreeClassifier'],
+                                'Accuracy': [RFC_Accuracy, KNN_Accuracy,DT_Accuracy]})
+#Compare the accuracy of the models
+model_accuracy.sort_values(by = "Accuracy", ascending = False)
+Analysis of Results:
+Model Performance:
+
+The Random Forest Classifier has shown the highest accuracy among the three models. An accuracy of 75.19% indicates that the model can accurately predict the popularity of a song on spotify 75.19% of the time based on the features and dataset. For a business this means that ever so slighlty over three out of four predictions made by this model about whether a song will be popualr are likely to be correct, providing a solid foundation dor decision making.
+
+The Decision Tree Classifier had an accuracy of 70.23%, while it is less accurate than the Random Forest model, this model still provides a reasonably good at predicting the popualrity of a song. The more straiightforward and interpretable nature could offer valuable insights into which features most strongly influence a songs popularity. This model can still significantly aid in strategic decision making, even if its predictability is slightly lower.
+
+The KNN Model has the lowest accuracy of the three with a predictive capability of 60.05%, this model might be less reliable for making critical business decisions. Moreover, it could still provide some valuable insights, in particularly in conjunction with other anlysis techniques.
+
+Business Implications:
+
+The Random Forest Model, with its higher accuracy, could be instrumental in identifying a potential hit song or allocating the budget of making a song elsewhere to effectively maximise the chance of creating a hit song.
+
+With the help of these models the task of identifying promising young talents in the music industry can become streamlined and music labels can sign more promising young people who create hit songs.
+
+This analysis can aid in understanding the market on a different level and uunderstand the dynamics of what makes a song popular, offering insights into how differnt attributes contribute to a songs success on the platform of Spotify. This can infrom broader business decisions, from prooduction to market positioning.
+
+This analysis can also aid in mitigating risk involved with investemnts in new music or marketing campaigns by making the business more informed of what songs are currently popular.
+
+Conclusion:
+# Print out the accuracy of each model
+from sklearn.metrics import accuracy_score
+print(f'The accuracy of Random Forest model is: {RFC_Accuracy*100:.2f}%')
+print(f'The accuracy of Decision Tree model is: {DT_Accuracy*100:.2f}%')
+print(f'The accuracy of the KNN model is: {KNN_Accuracy*100:.2f}%')
+​
+​
+​
+To conclude, this analysis provides valuable insights into song populariity on spotify, with the Random Forest Model offering the most reliable predictions.
+However, it is essential to consider that no model is perfect, and predictions should be one of many tools used in decision making.
+By integrating these insights with industry knowledge and other data sources this will offer a more robust foundation for ecision making in a very competitive music industry.
+
+ • Student ID Number: 20333896 • Name:Mark Moran • Signature:Mark Moran • Date:13/04/2024
