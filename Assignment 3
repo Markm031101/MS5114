@@ -1,0 +1,501 @@
+# Exploring Sentiment Within US Presidential Election News
+## Business Context and Problem
+In our modern, digital world, what people think and feel has a huge impact on political scenarios and the results of elections. Given its global importance, the US Presidential Election naturally draws a lot of attention from the media and the public. It’s just impossible to avoid! Even though most news is very informative, it does not come without it's challenges. There are multiple challenges faced by political campaigns, political analysts, and the public in general on how they can be able to measure public sentiment and feeling on the Presidential candidates. This has created the problem of not being able to effectively analyse the abundance of textual data to gauge public sentiment and understand its potential impact on voting behavior.
+​
+## Justification for Choosing US Presidential Election Sentiment Analysis
+The US Presidential Election serves as an excellent case study for several reasons;
+​
+- The volume and variety of textual data available from news articles provide a rich dataset for analysis
+- These are expressions within this coverage that can go ahead to influence public opinion; hence, monitoring and understanding by the stakeholders becomes very crucial. 
+- Analyzing the sentiment towards the election can bring up insights into the effectiveness of campaign messages, public issues, and the voting public generally feel about the elections.
+​
+These insights are not only interesting from an academic point of view but are also invaluable for political strategists, campaigners, policymakers and the general public.
+​
+## Expected Outcomes and Potential Business Value
+The major objective of this assignment is to develop a comprehensive understanding of the sentiment towards the US Presidential Election across different media outlets. We classify each article into presenting a positive, negative, or neutral sentiment towards any candidate or towards any particular issue using text analysis along with machine learning techniques. We will attempt to quantify trends in sentiment and have the ability to identify factors that could have an influence on public perception.
+​
+The business value potential of the analysis is vast. In political campaigns, it will offer real-time sentiment tracking and adjustments of messages to make sure that the strategies of the campaigns are actually resonant with the mood of the general public. Media organizations could use such insight to tailor coverage according to the interests and concerns of the audience in a manner that much better speaks to them. Furthermmore, this assignment will offer political students and political analysts a new set of empirical data to better understand the role of media in elections. It will highlight sentiment trends and how they might influence election results. We aim to show that our approach isn’t just useful for understanding and measuring sentiment towards the US Presidential Election, but how itt can also be used more broadly to extract valuable insights from other text. This aligns with the growing recognition of data analytics as a crucial tool in decision-making across various fields.
+​
+​
+## Data Collection
+​
+For this assignment, the Selenium library was employed to programmatically navigate and extract news articles from a curated list of reputable sources. Our selection included Sky News, CNN, Yahoo News, CNBC, and NBC, ensuring a wide spectrum of perspectives on the US Presidential Election. This strategic choice was imperative to mitigate potential biases that could arise from single-source data collection. Our web scraping approach was carefully designed to respect the terms of service and data usage policies of the targeted websites, demonstrating our commitment to ethical data practices.
+​
+The implemented Python script utilised Selenium’s WebDriver to interact with web pages, extracting the textual content of news articles. Given the dynamic nature of web pages and varying HTML structures across websites, we incorporated multiple CSS selectors and WebDriverWait to reliably capture article text. This method allowed for flexibility in handling different article formats and layouts across our chosen news platforms. The extracted articles were then saved into a CSV file, systematically organizing the data for subsequent processing and analysis.
+# Importing necessary modules from Selenium
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.common.by import By
+import time
+import csv
+​
+# Function to scrape article text from a given URL
+def scrape_article_text(url):
+    # Setting up Chrome WebDriver
+    service = Service(executable_path='C:/Program Files/Google/Chrome/chromedriver.exe')
+    driver = webdriver.Chrome(service=service)
+    article_text = ""  # Initializing variable to store article text
+​
+    try:
+        driver.get(url)  # Opening the URL in the Chrome WebDriver
+        time.sleep(3)  # Allowing some time for the page to load
+​
+        # Attempting to find and concatenate text from different CSS selectors
+        # Trying different CSS selectors to accommodate various webpage structures
+        paragraphs = driver.find_elements(By.CSS_SELECTOR, ".article__content p")
+        if paragraphs:  # If paragraphs are found
+            article_text = " ".join([paragraph.text for paragraph in paragraphs])
+        else:  # If specific selector fails, trying alternate ones
+            sections = driver.find_elements(By.CSS_SELECTOR, "section.medium-10.medium-offset-1.columns.article-body.has_embedded_images[itemprop='articleBody']")
+            if sections:
+                article_text = " ".join([section.text for section in sections])
+            else:
+                sections = driver.find_elements(By.CSS_SELECTOR, ".sdc-article-body.sdc-article-body--story.sdc-article-body--lead")
+                if sections:
+                    article_text = " ".join([section.text for section in sections])
+                else:
+                    sections = driver.find_elements(By.CSS_SELECTOR, ".article-body__content")
+                    if sections:
+                        article_text = " ".join([section.text for section in sections])
+                    else:
+                        sections = driver.find_elements(By.CSS_SELECTOR, ".ArticleBody-articleBody")
+                        if sections:
+                            article_text = " ".join([section.text for section in sections])
+                        
+    except Exception as e:  # Handling exceptions
+        print(f"An error occurred while scraping {url}: {e}")
+    finally:
+        driver.quit()  # Quitting the WebDriver session
+        return article_text.strip()  # Stripping leading and trailing whitespace from the scraped text
+​
+# File path to save the scraped data
+csv_file_path = 'C:\Cybersecurity Masters\Advanced Python\Scraping.csv'
+​
+​
+​
+# List of URLs
+urls = [
+        'https://edition.cnn.com/2024/03/30/politics/trump-posts-video-that-shows-image-of-biden-tied-up-in-the-back-of-a-truck/index.html',
+        'https://edition.cnn.com/2024/03/25/politics/fact-check-trump-nyse-truth-social-story/index.html',
+        'https://edition.cnn.com/2024/03/26/politics/trump-hush-money-trial-gag-order/index.html', 
+        'https://edition.cnn.com/2024/03/25/politics/trump-first-president-trial-analysis/index.html',
+        'https://edition.cnn.com/2024/03/25/politics/fact-check-trump-nyse-truth-social-story/index.html', 
+        'https://edition.cnn.com/2024/03/25/politics/trump-civil-fraud-trial-bond/index.html',
+        'https://edition.cnn.com/2024/03/30/politics/student-loan-forgiveness-biden-campaign/index.html',
+        'https://edition.cnn.com/2024/03/23/politics/biden-government-funding-bill-congress/index.html',
+        'https://edition.cnn.com/2024/03/21/politics/biden-political-attack-line/index.html',
+        'https://edition.cnn.com/2024/03/27/politics/barack-obama-joe-biden-bill-clinton-donald-trump/index.html', 
+        'https://www.cnn.com/2024/03/08/politics/biden-state-of-union-analysis/index.html',
+        'https://edition.cnn.com/2024/03/27/politics/obama-clinton-biden-fundraiser-trump/index.html',
+        'https://edition.cnn.com/2024/03/28/politics/trump-biden-campaign-contrast/index.html',
+        'https://edition.cnn.com/2024/03/30/politics/trump-biden-video-truth-social-violent-rhetoric/index.html', 
+        'https://www.cnn.com/2024/03/12/politics/biden-trump-presidential-nominees/index.html',
+        'https://www.cnn.com/2024/03/26/politics/abortion-2024-campaign-biden-trump-kennedy/index.html', 
+        'https://www.cnn.com/2024/03/09/politics/election-president-trump-biden/index.html',
+        'https://www.cnn.com/2024/03/14/politics/biden-trump-harris-president-campaign/index.html', 
+        'https://www.cnn.com/2024/03/12/politics/biden-economic-populist-inflation-analysis/index.html',
+        'https://www.cnn.com/2024/03/21/politics/takeaways-campaign-finance-february-biden-trump/index.html',
+        'https://www.cnn.com/2024/03/09/politics/biden-trump-georgia/index.html',
+        'https://www.cnn.com/2024/03/11/politics/biden-health-care-trump-new-hampshire/index.html',
+        'https://www.cnn.com/2024/03/10/politics/trump-biden-campaign-2024-analysis/index.html',
+        'https://www.cnn.com/2024/02/27/politics/biden-campaign-trump-age/index.html',
+        'https://www.cnn.com/2024/03/08/politics/biden-state-of-union-analysis/index.html',
+        'https://www.cnn.com/2024/02/22/politics/biden-bully-pulpit-trump-russia/index.html',
+        'https://www.rte.ie/news/us/2024/0313/1437598-biden-clinches-nomination/',
+        'https://www.rte.ie/news/us/2024/0308/1436680-biden-state-of-union-address/',
+        'https://www.rte.ie/news/2024/0331/1440906-biden-trump/',
+        'https://www.rte.ie/news/world/2024/0314/1438013-trump-court-case/',
+        'https://www.rte.ie/news/us/2024/0310/1437007-trump-biden-remarks/',
+        'https://www.rte.ie/news/2024/0124/1428253-us-elections/',
+        'https://www.rte.ie/news/analysis-and-comment/2024/0307/1436441-us-politics-analysis/',
+        'https://www.rte.ie/news/us/2023/0929/1407970-joe-biden-trump-us-election/',
+        'https://www.rte.ie/news/us/2024/0306/1436217-us-election-2024/',
+        'https://www.rte.ie/news/2024/0308/1436696-biden-state-of-the-union-takeaways/',
+        'https://www.rte.ie/news/us/2024/0228/1434836-us-politics/',
+        'https://www.rte.ie/news/us/2024/0309/1436877-biden-trump-orban/',
+        'https://www.rte.ie/news/2024/0224/1434145-south-carolina-primary/',
+        'https://www.rte.ie/news/us/2023/1206/1420413-donald-trump/',
+        'https://news.sky.com/story/it-seems-like-were-screwed-either-way-as-trump-vs-biden-repeat-moves-closer-some-voters-are-less-than-enthused-13088229',
+        'https://news.sky.com/story/biden-trump-rematch-looks-certain-after-pair-dominate-super-tuesday-votes-13088175',
+        'https://news.sky.com/story/joe-biden-secures-democratic-nomination-setting-up-likely-election-against-donald-trump-13093398',
+        'https://news.sky.com/story/biden-to-host-star-studded-fundraiser-with-obama-and-clinton-to-raise-25m-13103406',
+        'https://news.sky.com/story/inside-the-swing-state-where-the-us-presidential-election-result-isnt-a-foregone-conclusion-13087582',
+        'https://news.sky.com/story/fluent-fiery-and-punchy-biden-avoids-fluffing-his-lines-but-fails-to-heal-americas-rifts-13089673',
+        'https://news.sky.com/story/donald-trump-claims-joe-biden-cant-talk-or-walk-as-he-skips-republican-debate-12946237',
+        'https://news.sky.com/story/trump-v-biden-round-two-12867139',
+        'https://news.sky.com/story/donald-trump-accused-of-inciting-political-violence-after-posting-video-with-an-image-of-joe-biden-hog-tied-13104322',
+        'https://news.sky.com/story/joe-biden-criticised-by-trump-campaign-for-declaring-transgender-day-of-visibility-on-easter-sunday-13105187',
+        'https://news.sky.com/story/donald-trump-hush-money-trial-to-start-15-april-13101819',
+        'https://news.sky.com/story/joe-biden-beating-trump-in-the-polls-but-will-america-stick-with-the-devil-it-knows-12001913',
+        'https://news.sky.com/story/trump-v-biden-round-two-12867139',
+        'https://news.sky.com/story/hillary-clinton-trump-will-not-win-election-but-biden-will-12860048',
+        'https://news.sky.com/story/donald-trumps-assets-under-theat-as-he-cant-find-557m-bond-his-lawyers-say-13097773#:~:text=A%20court%20could%20begin%20to,come%20up%20with%20the%20money.&text=Donald%20Trump%20cannot%20find%20the,money%2C%20his%20lawyers%20have%20said.',
+        'https://www.nbcnews.com/politics/donald-trump/trump-50-million-gala-fundraising-biden-rcna146672',
+        'https://www.nbcnews.com/politics/2024-election/trump-biden-empty-debate-lectern-wisconsin-rally-rcna144385',
+        'https://www.nbcnews.com/politics/2024-election/biden-under-trumps-skin-campaign-strategy-rcna145661',
+        'https://www.nbcnews.com/meet-the-press/first-read/poll-overwhelming-majorities-express-concerns-biden-trump-ahead-2024-r-rcna111347',
+        'https://www.nbcnews.com/politics/2024-election/bidens-age-fitness-top-list-voters-concerns-poll-finds-rcna137212',
+        'https://www.nbcnews.com/politics/2024-election/bidens-improving-polling-trump-shaky-rcna143968 ',
+        'https://www.nbcnews.com/politics/2024-election/biden-north-carolina-top-battleground-trump-rcna143970 ',
+        'https://www.nbcnews.com/politics/democrats-biden-special-election-wins-politics-desk-rcna145351 ',
+        'https://www.nbcnews.com/politics/2024-election/poll-biden-trump-economy-presidential-race-rcna136834 ',
+        'https://www.nbcnews.com/politics/2024-election/biden-anger-rcna143729',
+        'https://www.nbcnews.com/politics/donald-trump/trumps-claims-crime-rates-clash-police-data-rcna145353 ',
+        'https://www.nbcnews.com/politics/2024-election/obamacare-wars-heat-biden-trump-clash-subsidies-rcna145187 ',
+        'https://www.nbcnews.com/politics/congress/house-oversight-chairman-invites-biden-testify-impeachment-probe-rcna145531 ',
+        'https://www.nbcnews.com/politics/2024-election/biden-rakes-25-million-new-york-fundraiser-obama-clinton-rcna145534 ',
+        'https://www.nbcnews.com/politics/2024-election/trump-super-pac-ad-blasts-bidens-age-opening-general-ad-rcna142224 ',
+        'https://www.nbcnews.com/politics/2024-election/poll-bidens-standing-hits-new-lows-israel-hamas-war-rcna125251 ',
+        'https://www.nbcnews.com/politics/2024-election/union-households-favor-biden-closer-margin-2020-poll-finds-rcna140569 ',
+        'https://www.nbcnews.com/politics/2024-election/trump-conviction-changes-2024-race-latest-poll-rcna137087 ',
+        'https://www.nbcnews.com/meet-the-press/first-read/biden-trails-trump-key-battleground-states-polls-find-rcna123768 ',
+        'https://www.nbcnews.com/politics/2024-election/poll-numbers-help-explain-bidens-camp-joined-tiktok-rcna138489 ',
+        'https://www.nbcnews.com/politics/2024-election/poll-nearly-half-haleys-iowa-backers-say-ll-vote-biden-trump-rcna133821 ',
+        'https://www.nbcnews.com/politics/joe-biden/state-union-key-takeaways-biden-address-rcna140768 ',
+        'https://www.nbcnews.com/politics/2024-election/biden-beats-trump-takeaways-2024-campaign-money-rcna136497 ',
+        'https://www.nbcnews.com/meet-the-press/first-read/poll-shows-voters-somewhat-disapprove-biden-swing-2024-race-rcna125269 ',
+        'https://www.nbcnews.com/politics/2024-election/wavering-black-voters-biden-flawed-trump-unacceptable-deciders-rcna140786',
+        'https://www.cnbc.com/2024/03/11/trump-vs-biden-where-candidates-stand-on-social-security-medicare.html',
+       'https://www.cnbc.com/2024/03/26/biden-pulls-even-with-trump-as-economic-view-improves-slightly-cnbc-survey-shows.html',
+       'https://www.cnbc.com/2023/10/18/biden-would-lose-in-match-up-vs-trump-according-to-cnbc-survey-israel-funding-has-strong-support.html',
+       'https://www.cnbc.com/2023/09/13/2024-election-biden-trump-in-statistical-tie-in-new-poll.html',
+       'https://www.cnbc.com/2024/02/15/russias-putin-says-he-prefers-more-predictable-biden-over-trump-in-us-election.html',
+       'https://www.cnbc.com/2024/02/14/dems-tout-special-election-win-as-a-blueprint-to-beat-trump-gop.html',
+       'https://www.cnbc.com/2023/12/19/trump-wipes-out-bidens-lead-with-latino-voters-in-2024-cnbc-survey-.html',
+       'https://www.cnbc.com/2024/03/07/trump-vs-biden-what-presidential-election-rematch-may-mean-for-taxes.html',
+       'https://www.cnbc.com/2024/03/04/biden-may-be-losing-his-favorability-advantage-over-trump-new-polls-suggest.html',
+       'https://www.cnbc.com/2024/01/18/davos-us-executives-see-a-trump-victory-in-2024.html',
+       'https://www.cnbc.com/2023/09/04/biden-2024-election-poll-trump-economy-old-age-concerns-inflation.html',
+       'https://www.cnbc.com/2023/11/06/2024-presidential-poll-grim-economic-outlook-among-voters-gives-trump-an-advantage.html',
+       'https://www.cnbc.com/2023/06/28/trump-only-republican-lose-to-biden-paul-ryan.html',
+       'https://www.cnbc.com/2023/11/17/-trump-loses-bid-to-cut-jan-6-reference-in-election-case.html',
+       'https://www.cnbc.com/2024/04/04/biden-us-economy-worlds-best-trump-claims-cesspool-data-is-clear.html',
+       'https://www.cnbc.com/2024/04/04/bidens-battle-to-secure-backing-of-anti-trump-republicans.html',
+       'https://www.cnbc.com/2024/03/25/biden-campaigns-latest-broadside-a-feeble-trump-is-lying-about-having-money-.html',
+       'https://cnbc.com/2024/02/22/biden-creates-anti-trump-war-chest.html',
+       'https://www.cnbc.com/2023/06/12/koch-network-ads-target-trump-biden.html',
+       'https://www.cnbc.com/2024/02/06/leon-cooperman-says-he-will-not-vote-for-trump-or-biden.html'
+​
+]
+​
+# Writing to CSV: We open the CSV file in write mode, initialize a CSV writer,
+# and iterate through the list of URLs to scrape article text from each URL.
+# For each URL, we call the `scrape_article_text` function to retrieve the article text,
+# and then we write the URL and corresponding text to a new row in the CSV file.
+# Finally, we ensure to handle encoding properly to handle text data correctly.
+with open(csv_file_path, mode='w', newline='', encoding='utf-8') as file:
+    writer = csv.writer(file)  # Initializing CSV writer
+​
+    for url in urls:  # Iterating through list of URLs
+        text = scrape_article_text(url)  # Scraping article text
+        writer.writerow([url, text])  # Writing URL and text to CSV
+​
+​
+## Data Preperation
+This section will focus on preparing the dataset for analysis and model training. This involves several key steps, including loading the dataset, performing initial sentiment analysis, and cleaning the data.
+​
+### Libraries Import
+Before the analysis can begin, it’s imperative to load in the relevant libraries. 
+​
+**Pandas** - Provides the functionality to load, clean, and transform our dataset into a format that is ready for analysis.
+​
+**Matplotlib and Seaborn** – These libraries offer a wide range of plotting options that allow for the visualisation of the data.
+​
+**NLTK** - The Natural Language Toolkit (NLTK) library is essential for processing and analysing text data.
+​
+**Scikit-learn** -  Provides a wide array of algorithms for classification tasks.
+​
+**XGBoost** – offers efficient and powerful implementations of gradient boosting algorithm.
+# Importing necessary libraries for data analysis, visualization, and sentiment analysis
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+from nltk.sentiment.vader import SentimentIntensityAnalyzer
+from sklearn.model_selection import train_test_split
+from sklearn.feature_extraction.text import TfidfVectorizer
+from xgboost import XGBClassifier
+from sklearn.metrics import accuracy_score, classification_report
+from sklearn.linear_model import LogisticRegression
+​
+# Load the CSV file containing scraped data
+file_path = r'C:\Cybersecurity Masters\Advanced Python\Scraping.csv'
+data = pd.read_csv(file_path)
+​
+​
+​
+​
+This section demonstrates the process of performing sentiment analysis on the dataset, specifically using the NLTK library’s VADER sentiment analyser. The VADER sentiment analyser is instantiated to analyse the emotional tone of texts. It then calculates the compound sentiment scores for each article text within the dataset, which are numerical values ranging from -1 to 1, indicating the overall sentiment from negative to positive. Based on these scores, texts are categorised into three sentiment labels: 'positive' for scores above 0, 'negative' for scores below 0, and 'neutral' for scores exactly at 0.
+# Initialize NLTK's VADER sentiment analyzer
+sid = SentimentIntensityAnalyzer()
+​
+# Perform sentiment analysis for each text and store the compound sentiment score
+# Using lambda function to apply sentiment analysis to each text in the 'Scraped Text' column
+data['Sentiment'] = data['Scraped Text'].apply(lambda x: sid.polarity_scores(x)['compound'])
+​
+# Classify sentiment labels based on the compound score
+# If the compound score is greater than 0, label as 'positive'
+# If the compound score is less than 0, label as 'negative'
+# If the compound score is 0, label as 'neutral'
+data['Sentiment_Label'] = data['Sentiment'].apply(lambda score: 'positive' if score > 0 else ('negative' if score < 0 else 'neutral'))
+​
+​
+## Data cleansing
+​
+**Displaying the first few rows** - This initial overview helps in identifying the types of data present.
+​
+**Summary Statistics** - Generating summary statistics is crucial for summarising the distribution of numerical features within the dataset.
+​
+**Checking for missing values** - The identification of missing values is a critical step prior to further analysis. No missing values were found.
+# Display the first few rows of the dataset
+print("First few rows of the dataset:")
+print(data.head())
+​
+# Summary statistics
+print("\nSummary statistics:")
+print(data.describe())
+​
+# Check for missing values
+print("\nMissing values:")
+print(data.isnull().sum())
+​
+​
+​
+## Exploratory Data Analysis
+​
+### Distribution of sentiment scores
+The graph of sentiment scores depicts a bimodal distribution of sentiments from the article texts. This pattern highlights the sentiments expressed in the text are generally intense, with a notable lack of neutrality in the sentiments towards Biden or Trump.
+​
+### Distribution of sentiment labels
+The distribution of the graph Suggests the text in the web articles tend to express clear positive or negative opinions rather than neutral position. There's a higher count of positive sentiments compared to negative and neutral.
+​
+# Distribution of sentiment scores
+plt.figure(figsize=(8, 6))
+sns.histplot(data['Sentiment'], bins=20, kde=True, color='skyblue')
+plt.title('Distribution of Sentiment Scores')
+plt.xlabel('Sentiment Score')
+plt.ylabel('Frequency')
+plt.show()
+​
+​
+# Distribution of sentiment labels
+plt.figure(figsize=(6, 4))
+sentiment_counts = data['Sentiment_Label'].value_counts()
+sns.barplot(x=sentiment_counts.index, y=sentiment_counts.values, palette='Set2')
+plt.title('Distribution of Sentiment Labels')
+plt.xlabel('Sentiment Label')
+plt.ylabel('Count')
+plt.show()
+# Define the file path for the new CSV file containing sentiment analysis results
+output_file_path = r'C:\Cybersecurity Masters\Advanced Python\Scraping_with_the_Sentiment.csv'
+​
+# Save the DataFrame with sentiment analysis results to a new CSV file
+# Setting index=False to exclude the DataFrame index from the CSV file
+data.to_csv(output_file_path, index=False)
+​
+# Display confirmation message with the file path where the DataFrame is saved
+print("DataFrame with sentiment analysis results saved to:", output_file_path)
+​
+## Sentiment Analysis and Model Evaluation for Political Figures
+In our analysis, we aim to understand the landscape of public sentiment towards major political figures in the US presidential race, focusing on Donald Trump and Joe Biden. We utilize sentiment analysis and machine learning classification models to dissect the tone of scraped textual data, determining the prevailing sentiments and comparing the public perception of each figure.
+​
+## Preparing the Data
+Initially, we segment our dataset to identify sentiments and categorize them accordingly. This step is critical for setting a foundation for our analysis.
+​
+## Feature Extraction with TF-IDF
+To process our text data for machine learning, we employ TF-IDF vectorization, which helps in emphasizing words that are more interesting.
+​
+## Logistic Regression Model
+Our initial approach involves using a Logistic Regression model, favored for its simplicity and efficiency in binary and multi-class classification problems.
+​
+# Splitting the data into train and test sets
+# We separate the 'Scraped Text' and 'Sentiment_Label' columns into features (X) and target (y).
+# Then, using train_test_split function, we split the data into training and testing sets.
+# The test_size parameter specifies the proportion of the dataset to include in the test split,
+# and random_state ensures reproducibility of the split.
+​
+X = data['Scraped Text']
+y = data['Sentiment_Label']
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+​
+# Creating TF-IDF vectorizer
+# We initialize a TF-IDF vectorizer object, specifying max_features to limit the number of features.
+# Then, we fit the vectorizer to the training data (X_train) and transform both training and testing data
+# to TF-IDF matrices (X_train_tfidf and X_test_tfidf) using the fitted vectorizer.
+​
+tfidf_vectorizer = TfidfVectorizer(max_features=1000)
+X_train_tfidf = tfidf_vectorizer.fit_transform(X_train)
+X_test_tfidf = tfidf_vectorizer.transform(X_test)
+​
+# Initializing and training Logistic Regression model
+# We create a Logistic Regression model object and train it using the TF-IDF transformed training data (X_train_tfidf)
+# along with corresponding target labels (y_train).
+​
+logreg_model = LogisticRegression()
+logreg_model.fit(X_train_tfidf, y_train)
+​
+# Making predictions
+# Using the trained logistic regression model, we predict sentiment labels for the test data (X_test_tfidf).
+​
+y_pred = logreg_model.predict(X_test_tfidf)
+​
+# Evaluating the model
+# We evaluate the performance of the model by comparing the predicted labels (y_pred) with the actual labels (y_test).
+# We calculate the accuracy score and generate a classification report which includes precision, recall, F1-score,
+# and support for each class (positive, negative, neutral).
+accuracy = accuracy_score(y_test, y_pred)
+print("Accuracy:", accuracy)
+print("\nClassification Report:")
+print(classification_report(y_test, y_pred))
+​
+## Model Performance
+Evaluating our model's performance provides insights into its accuracy and the precision and recall for each sentiment class.
+​
+## Results:
+​
+- Accuracy: The Logistic Regression model achieved an accuracy of 0.55, indicating that it correctly predicted the sentiment of the text more than half of the time.
+- Classification Report: The report shows a higher precision for negative sentiments, suggesting that when the model predicts negative sentiment, it is highly likely to be correct. However, the recall for negative sentiments is lower, indicating missed negative sentiments.
+## XGBoost Classifier
+To improve our analysis, we also employ an XGBoost classifier, known for its performance and speed in classification tasks. XGBoost Classifier Performance
+Accuracy Improvement: The accuracy increased from 0.55 to 0.7 when using the XGBoost Classifier. This indicates that the XGBoost model was able to correctly predict the sentiment of the text 70% of the time, a significant improvement over the Logistic Regression model's performance. This improvement underscores XGBoost's capability in handling the complexities and nuances of sentiment analysis more effectively.
+​
+# Importing necessary libraries
+from sklearn.preprocessing import LabelEncoder
+​
+# Initialize LabelEncoder
+# We create a LabelEncoder object to convert categorical target labels (sentiment classes) into numerical format.
+label_encoder = LabelEncoder()
+​
+# Encode target classes
+# Using the fit_transform method, we encode the target labels (y_train and y_test) into numerical format.
+# This step assigns a unique numerical value to each class label.
+y_train_encoded = label_encoder.fit_transform(y_train)
+y_test_encoded = label_encoder.transform(y_test)
+​
+# Initialize and train XGBoost classifier
+# We create an XGBoost classifier object and train it using the TF-IDF transformed training data (X_train_tfidf)
+# and the encoded target labels (y_train_encoded).
+xgb_model = XGBClassifier()
+xgb_model.fit(X_train_tfidf, y_train_encoded)
+​
+# Predictions
+# Using the trained XGBoost classifier, we predict numerical labels for the test data (X_test_tfidf).
+y_pred_encoded = xgb_model.predict(X_test_tfidf)
+​
+# Convert predictions back to original class labels
+# We use the inverse_transform method of the label_encoder to convert the predicted numerical labels back
+# to their original class labels.
+y_pred = label_encoder.inverse_transform(y_pred_encoded)
+​
+# Evaluate the model
+# We assess the performance of the model by comparing the predicted labels (y_pred) with the actual labels (y_test).
+# We calculate the accuracy score and generate a classification report to evaluate the model's performance.
+accuracy = accuracy_score(y_test, y_pred)
+print("Accuracy:", accuracy)
+print("\nClassification Report:")
+print(classification_report(y_test, y_pred))
+​
+## XGBoost Results
+​
+Classification Report Analysis:
+​
+Negative Sentiments: For negative sentiments, the precision is 1.00, meaning that every instance predicted as negative was indeed negative. However, the recall is 0.54, indicating that the model missed a significant number of actual negative instances. The F1-score, which balances precision and recall, stands at 0.70, reflecting a decent but improvable performance in identifying negative sentiments.
+​
+Positive Sentiments: The precision for positive sentiments is lower at 0.54, indicating that when the model predicts a sentiment as positive, it is correct 54% of the time. The recall, however, is 1.00, meaning the model successfully identified all positive instances. The F1-score equals 0.70, mirroring the score for negative sentiments and suggesting a balanced performance across both sentiment classes.
+​
+Insights from the XGBoost Results
+Balanced Performance Across Sentiments: The F1-scores for both positive and negative sentiments are equal, suggesting the model performs consistently across different sentiment classes. This balance is crucial for ensuring that the sentiment analysis is fair and unbiased toward either sentiment.
+​
+Recall vs. Precision Trade-off:
+​
+The high recall but lower precision for positive sentiments suggest the model is inclined to label texts as positive, even some that are not, leading to more false positives.
+Conversely, the high precision but lower recall for negative sentiments indicate caution in labeling texts as negative, missing some actual negatives, resulting in false negatives.
+## Average Sentiment Score Calculation
+- Purpose:
+​
+The average sentiment score aims to quantify the general sentiment towards Trump and Biden across all analyzed texts. It's a numerical representation where higher scores indicate more positive sentiments, and lower scores suggest more negative sentiments.
+​
+- Method:
+​
+For Trump: You filter the dataset to include only those texts mentioning "Trump" and calculate the mean of their sentiment scores.
+For Biden: Similarly, texts mentioning "Biden" are isolated, and their sentiment scores' mean is calculated.
+Results:
+​
+Trump: The average sentiment score is approximately 0.177, suggesting a slightly positive overall sentiment towards Trump in the dataset.
+Biden: Biden's average sentiment score is around 0.186, marginally higher than Trump's, indicating a similarly slightly positive sentiment but slightly more favorable towards Biden.
+# Calculate the average sentiment score for Trump
+trump_scores = data[data['Scraped Text'].str.contains('Trump', case=False)]['Sentiment']
+average_trump_sentiment = trump_scores.mean()
+​
+# Calculate the average sentiment score for Biden
+biden_scores = data[data['Scraped Text'].str.contains('Biden', case=False)]['Sentiment']
+average_biden_sentiment = biden_scores.mean()
+​
+print(f"Average Sentiment Score for Trump: {average_trump_sentiment}")
+print(f"Average Sentiment Score for Biden: {average_biden_sentiment}")
+​
+## Sentiment Label Distribution
+​
+- Purpose:
+​
+Beyond the average score, examining the distribution of sentiment labels (positive, negative, neutral) provides insights into the sentiment's nature and variability towards each figure.
+​
+- Method:
+​
+Count the occurrences of each sentiment label (positive, negative, neutral) for texts mentioning Trump or Biden, offering a clearer picture of sentiment distribution.
+​
+- Results:
+​
+Trump: There's a higher count of positive sentiments (55) compared to negative (43), with very few neutral sentiments (1), reflecting a more polarized sentiment distribution.
+Biden: Similar to Trump, Biden also has more positive sentiments (56) than negative (43), with no mention of neutral sentiments, indicating a comparably polarized but slightly more positive sentiment.
+# Count sentiment labels for Trump
+trump_sentiments = data[data['Scraped Text'].str.contains('Trump', case=False)]['Sentiment_Label'].value_counts()
+​
+# Count sentiment labels for Biden
+biden_sentiments = data[data['Scraped Text'].str.contains('Biden', case=False)]['Sentiment_Label'].value_counts()
+​
+print("Sentiment Label Distribution for Trump:")
+print(trump_sentiments)
+print("\nSentiment Label Distribution for Biden:")
+print(biden_sentiments)
+​
+## Visualizing the Results
+​
+The visualization section employs bar charts to graphically represent the findings, making the comparison between Trump and Biden more accessible and interpretable:
+​
+- Average Sentiment Scores: A bar chart compares the average sentiment scores for Trump and Biden, highlighting the slight difference in their favorability within the dataset.
+​
+- Sentiment Label Distribution: Separate bar charts for Trump and Biden showcase the count of texts classified as positive, negative, or neutral. This visualization helps in understanding not just the sentiment's direction (positive or negative) but also its intensity and distribution.
+# Visualizing average sentiment scores
+plt.bar(['Trump', 'Biden'], [average_trump_sentiment, average_biden_sentiment], color=['red', 'blue'])
+plt.title('Average Sentiment Score')
+plt.ylabel('Sentiment Score')
+plt.show()
+​
+# Visualizing sentiment label distribution
+fig, axs = plt.subplots(1, 2, figsize=(14, 5))
+axs[0].bar(trump_sentiments.index, trump_sentiments.values, color='red')
+axs[0].set_title('Trump Sentiment Labels')
+axs[0].set_ylabel('Count')
+​
+axs[1].bar(biden_sentiments.index, biden_sentiments.values, color='blue')
+axs[1].set_title('Biden Sentiment Labels')
+axs[1].set_ylabel('Count')
+​
+plt.show()
+​
+## Interpretation and Insights
+Comparative Sentiment: The average sentiment scores suggest that both political figures are viewed somewhat positively on average, with Biden receiving a marginally more favorable sentiment than Trump.
+​
+## Sentiment Polarization
+The distribution of sentiment labels reveals a polarized public sentiment towards both figures, with a dominance of positive and negative sentiments and almost no neutral stance. This polarization reflects the divided public opinion common in political discourse.
+​
+## Slight Favorability Towards Biden
+Both the slightly higher average sentiment score and the count of positive sentiment labels for Biden suggest a marginally more favorable public sentiment towards him compared to Trump in the analyzed texts.
+## Conclusion
+In conclusion, we have conducted a comprehensive sentiment analysis on a dataset comprising 100 news articles to gauge public sentiment towards Donald Trump and Joe Biden in the context of the US presidential race. Through this analysis, we have gained valuable insights into the prevailing attitudes towards these two key political figures.
+​
+Our examination of the average sentiment scores reveals a nuanced picture, indicating that both Trump and Biden are viewed somewhat positively on average, with Biden holding a slight edge in favorability. Moreover, the sentiment label distribution underscores the polarized nature of public opinion, with a dominance of both positive and negative sentiments and minimal neutral stances for both candidates.
+​
+Drawing from these findings, we interpret that while there's a general sentiment of positivity towards both Trump and Biden, Biden appears to enjoy a slightly more favorable public perception based on the sentiment surrounding him. This subtle difference in favorability could potentially signal an advantage for Biden in the presidential race, although further analysis would be needed to confirm this hypothesis.
+​
+Overall, our analysis provides valuable insights that can inform strategic decision-making and enhance understanding of public sentiment within the political landscape. However, it's crucial to acknowledge the limitations inherent in sentiment analysis, including the influence of the data source and context on the outcomes.
